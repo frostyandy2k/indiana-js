@@ -29,6 +29,7 @@ a {
 .btn {
     display: inline-block;
     margin-bottom: 1rem;
+    font-weight: bold;
     color: #000;
     background-color: rgba(155, 155, 155, 0.9);
     border-color: black;
@@ -70,7 +71,7 @@ border-color: black;
     color: #FFF;
     text-align: center;
     background-color: #159957;
-    background-image: url("../img/wall.png");
+    background-image: url("../img/wall.jpg");
     background-size: 100%;
 }
 
