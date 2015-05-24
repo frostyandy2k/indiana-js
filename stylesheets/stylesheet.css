@@ -14,7 +14,7 @@ src: url("../fonts/adventurefont/Adventure Hollow.otf") format("opentype");
 
 h1{
   /*font-family: Adenvture;*/
-  color: rgba(255, 193,7,1);;
+  color: rgba(255, 193,7,1);
 }
 
 body {
