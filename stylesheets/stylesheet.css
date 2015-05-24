@@ -4,17 +4,17 @@
  /*font: http://www.dafont.com/adventure.font*/
 @font-face {
 font-family: Adenvture;
-src: url("fonts/adventurefont/Adventure.otf") format("opentype");
+src: url("../fonts/adventurefont/Adventure.otf") format("opentype");
 }
 
 @font-face {
 font-family: AdventureHollow;
-src: url("fonts/adventurefont/Adventure Hollow.otf") format("opentype");
+src: url("../fonts/adventurefont/Adventure Hollow.otf") format("opentype");
 }
 
 h1{
-  font-family: Adenvture;
-  color: black;
+  /*font-family: Adenvture;*/
+  color: rgba(255, 193,7,1);;
 }
 
 body {
@@ -35,7 +35,7 @@ a {
     display: inline-block;
     margin-bottom: 1rem;
     color: #000;
-    background-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(155, 155, 155, 0.5);
     border-color: rgba(255, 255, 255, 1);
     border-style: solid;
     border-width: 1px;
@@ -74,7 +74,7 @@ a {
     color: #FFF;
     text-align: center;
     background-color: #159957;
-    background-image: url("img/wall.png");
+    background-image: url("../img/wall.png");
     background-size: 100%;
 }
 
@@ -91,6 +91,8 @@ a {
     padding: 2rem 1rem; } }
 
 .project-name {
+  font-family: Adenvture;
+  color: black;
   margin-top: 0;
   margin-bottom: 0.1rem; }
 
