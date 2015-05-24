@@ -1,6 +1,6 @@
 {
   "name": "indiana-js",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Spatial location library for Web-of-Things-enabled web sites",
   "main": "index.js",
   "scripts": {
