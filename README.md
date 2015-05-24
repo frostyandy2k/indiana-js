@@ -40,4 +40,4 @@ Check out some web-apps that use the library:
 ```
 
 ### Authors and Contributors
-Many Thanks to Jack Unseld (@junseld)
+Many Thanks to Jack Unseld (@junseld) and Till Riedel (@riedel)
