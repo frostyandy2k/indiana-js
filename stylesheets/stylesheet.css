@@ -73,7 +73,13 @@ border-color: black;
     background-color: #159957;
     background-image: url("../img/wall.jpg");
     background-size: 100%;
+    border-bottom: 1px solid black;
 }
+
+.materialshadow { 
+  box-shadow: 0px 2px 3px 1px rgba(0, 0, 0, 0.26);
+}
+
 
 @media screen and (min-width: 64em) {
   .page-header {
