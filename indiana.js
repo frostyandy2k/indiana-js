@@ -2,16 +2,21 @@
 //   console.log("Hello World IndianaJS :)");
 // }
 
-var spatialAwareness = function() {
+var spatialAwareness = function(items) {
 	var originalOrientation = {tiltLR: 0, tiltFB: 0, dir: 0};
 	var currentOrientation = {tiltLR: 0, tiltFB: 0, dir: 0};
 	var position = {x:0, y:0};
 
-	var itemsArray = [];
+	var itemsArray = items;
 	var range = 10;
 	
 	var initialResetDone = false;
 	initDeviceOrientation(function(tiltLR,tiltFB,dir) {
+
+		// console.log("Original direction:",originalOrientation.dir);
+		currentOrientation.tiltLR = tiltLR;
+		currentOrientation.tiltFB = tiltFB;
+		currentOrientation.dir = dir;
 
 		if(!initialResetDone) {
 			originalOrientation.tiltLR = currentOrientation.tiltLR;
@@ -19,10 +24,8 @@ var spatialAwareness = function() {
 			originalOrientation.dir = currentOrientation.dir;
 			initialResetDone = true;
 		}
-
-		currentOrientation.tiltLR = tiltLR;
-		currentOrientation.tiltFB = tiltFB;
-		currentOrientation.dir = dir;
+		var event = new CustomEvent('deviceorientation2', {detail: getOrientation()});
+		document.dispatchEvent(event);
 		checkFront(range);
 	});
 
@@ -61,6 +64,18 @@ var spatialAwareness = function() {
 
 	function checkFront(range) {
 		var dir = getOrientation().dir;
+		console.log(dir)
+		// var foundItem = false;
+
+		$.each(itemsArray, function(key, item) {
+			var itemlocation = item.location.dir;
+			var difference = Math.abs(dir - itemlocation);
+			if(difference < range/2) {
+				// foundItem = true;
+				var event = new CustomEvent('foundItemInFront', {detail: item});
+				document.dispatchEvent(event);
+			}
+		})
 	}
 
 	function getOrientation() {
@@ -70,17 +85,20 @@ var spatialAwareness = function() {
 		orientation.dir = normalizeDegree(currentOrientation.dir - originalOrientation.dir);
 		return orientation;
 	}
-	
 
 	return {
 		registerItems : function(items) {
 			if(items.constructor == Array) {
 				for(var item in items) {
-					if(!item.uri || !item.location) return false;
+					if(!item.uri || !item.location) {
+						console.log("ERROR: An item doesn't contain a uri or location:", item);
+						return false;
+					}
 				}
 				itemsArray = items;
 				return true;
 			}
+			console.log("ERROR: This function can only register an array of items.")
 			return false;
 		},
 		getPosition : function() {
@@ -93,7 +111,20 @@ var spatialAwareness = function() {
 			orientation.dir = normalizeDegree(currentOrientation.dir - originalOrientation.dir);
 			return orientation;
 		},
-		isInFront : function(item, cb) {
+		resetOrientation : function() {
+			originalOrientation.tiltLR = currentOrientation.tiltLR;
+			originalOrientation.tiltFB = currentOrientation.tiltFB;
+			originalOrientation.dir = currentOrientation.dir;
+			console.log("Reseted orientation at:", currentOrientation);
+		},
+		getOrientation : function() {
+			var orientation = {}
+			orientation.tiltLR = currentOrientation.tiltLR - originalOrientation.tiltLR;
+			orientation.tiltFB = currentOrientation.tiltFB - originalOrientation.tiltFB;
+			orientation.dir = normalizeDegree(currentOrientation.dir - originalOrientation.dir);
+			return orientation;
+		},
+		isInFront : function(item) {
 
 		},
 		buildRadar : function(divselector) {
