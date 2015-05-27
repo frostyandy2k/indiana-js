@@ -2,32 +2,62 @@
 //   console.log("Hello World IndianaJS :)");
 // }
 
-var spatialAwareness = function(items) {
+var spatialAwareness = function() {
+	var kitchenitems = [
+	  {uri: "microwave",
+	    location: {dir: 350},
+	    color: "blue"
+	  },
+	  {uri: "flower",
+	    location: {dir: 270},
+	    color: "red"
+	  },
+	  {uri: "lamp",
+	    location: {dir: 80},
+	    color: "white",
+	    controlON: "http://cumulus.teco.edu:81/21345gjphtnch87/ON",
+	    controlOFF: "http://cumulus.teco.edu:81/21345gjphtnch87/OFF"
+	  },
+	  {uri: "coffeemachine",
+	    location: {dir: 190},
+	    color: "black"
+	  },
+	  {uri: "fridge",
+	    location: {dir: 200},
+	    color: "gray"
+	  }
+	];
 	var originalOrientation = {tiltLR: 0, tiltFB: 0, dir: 0};
 	var currentOrientation = {tiltLR: 0, tiltFB: 0, dir: 0};
 	var position = {x:0, y:0};
 
-	var itemsArray = items;
+	var itemsArray = [];
 	var range = 10;
 	
-	var initialResetDone = false;
-	initDeviceOrientation(function(tiltLR,tiltFB,dir) {
+	function init() {
+		var initialResetDone = false;
 
-		// console.log("Original direction:",originalOrientation.dir);
-		currentOrientation.tiltLR = tiltLR;
-		currentOrientation.tiltFB = tiltFB;
-		currentOrientation.dir = dir;
+		initDeviceOrientation(function(tiltLR,tiltFB,dir) {
 
-		if(!initialResetDone) {
-			originalOrientation.tiltLR = currentOrientation.tiltLR;
-			originalOrientation.tiltFB = currentOrientation.tiltFB;
-			originalOrientation.dir = currentOrientation.dir;
-			initialResetDone = true;
-		}
-		var event = new CustomEvent('deviceorientation2', {detail: getOrientation()});
-		document.dispatchEvent(event);
-		checkFront(range);
-	});
+			// console.log("Original direction:",originalOrientation.dir);
+			currentOrientation.tiltLR = tiltLR;
+			currentOrientation.tiltFB = tiltFB;
+			currentOrientation.dir = dir;
+
+			if(!initialResetDone) {
+				originalOrientation.tiltLR = currentOrientation.tiltLR;
+				originalOrientation.tiltFB = currentOrientation.tiltFB;
+				originalOrientation.dir = currentOrientation.dir;
+				initialResetDone = true;
+			}
+			var event = new CustomEvent('deviceorientation2', 
+				{detail: {orientation: getOrientation(), items: itemsArray}});
+			document.dispatchEvent(event);
+			checkFront(range);
+		});
+
+		// initKinekt();
+	}
 
 	function initDeviceOrientation(cb) {
 		if (window.DeviceOrientationEvent) {
@@ -62,11 +92,27 @@ var spatialAwareness = function(items) {
 		return d;
 	}
 
+	function ajaxRequest(url, type, data, cb, cbe) {
+		$.ajax({
+			url: url,
+			method: type,
+			data: data
+		}).done(function(data) {
+			console.log("done:",data)
+			$("#qrcodedivdata").html(data)
+			cb(data)
+		}).fail(function(jqXHR, textStatus) {  
+			console.log( "Request failed: " + textStatus, jqXHR.statusText );
+			// $("#qrcodedivdata").html(textStatus)
+			cbe(jqXHR)
+		});
+	}
+
 	function checkFront(range) {
 		var dir = getOrientation().dir;
-		console.log(dir)
+		// console.log(dir)
 		// var foundItem = false;
-
+		var count = itemsArray.length;
 		$.each(itemsArray, function(key, item) {
 			var itemlocation = item.location.dir;
 			var difference = Math.abs(dir - itemlocation);
@@ -74,6 +120,12 @@ var spatialAwareness = function(items) {
 				// foundItem = true;
 				var event = new CustomEvent('foundItemInFront', {detail: item});
 				document.dispatchEvent(event);
+			} else {
+				count--;
+				if(count == 0) {
+					var event = new CustomEvent('noItemInFront');
+					document.dispatchEvent(event);
+				}
 			}
 		})
 	}
@@ -89,9 +141,11 @@ var spatialAwareness = function(items) {
 	return {
 		registerItems : function(items) {
 			if(items.constructor == Array) {
-				for(var item in items) {
+				for(var key in items) {
+					var item = items[key];
 					if(!item.uri || !item.location) {
 						console.log("ERROR: An item doesn't contain a uri or location:", item);
+						console.log(items)
 						return false;
 					}
 				}
@@ -124,8 +178,64 @@ var spatialAwareness = function(items) {
 			orientation.dir = normalizeDegree(currentOrientation.dir - originalOrientation.dir);
 			return orientation;
 		},
-		isInFront : function(item) {
-
+		getData : function(cb) {
+			  // console.log( "Start Ajax Request!" );
+			// $.get( "http://localhost:8080/kitchen", function( data ) {
+			//   console.log( "success:",data );
+			//   // alert( "Load was performed." );
+			// }).fail(function(err) {
+			// 	console.log("Error:",err.statusText)
+			// }).done(function(data) {
+			//   console.log( "done:",data );
+			// });
+				// $("#qrcodedivdata").html("Getting data")
+			ajaxRequest("http://localhost:8080/kitchen","GET", {}, function(data) {
+				console.log("Ajax success:", data);
+				init();
+				cb(data);
+			}, function(err) {
+				console.log("Ajax error:", err);
+				itemsArray = kitchenitems;
+				init();
+				cb(kitchenitems);
+			});
+		},
+		activateQRCodeReader : function(divselector, cb) {
+			$(divselector).html5_qrcode(function(data) {
+			        // do something when code is read
+					// $(divselector+"data").html(data);
+			    	console.log(data)
+			    	var r = confirm("Are you in TECO kitchen?")
+			    	if(r) {
+						ajaxRequest("http://localhost:8080/kitchen","GET", {}, function(data) {
+							console.log("Ajax success:", data);
+			    			init();
+							itemsArray = data;
+							cb(data)
+						}, function(err) {
+							console.log("Ajax error:", err);
+							// $("#qrcodediverr").html(err.statusText)
+						});
+			    		// $(divselector+"data").html("Welcome to TECO kitchen.")
+			    	} else {
+			    		init();
+						itemsArray = kitchenitems;
+			    		cb(kitchenitems);
+			    	}
+			    }, function(error){
+			        //show read errors 
+					// $(divselector+"err").html(error)
+			        // console.log(error)
+			    }, function(videoError){
+			        //the video stream could be opened
+			        console.log(videoError)
+			    })
+		},
+		deactivateQRCodeReader : function(divselector) {
+			$(divselector).html5_qrcode_stop();
+			$(divselector).html('')
+			// $(divselector+"data").html('')
+			// $(divselector+"err").html('')
 		},
 		buildRadar : function(divselector) {
 			var width = window.innerWidth,
