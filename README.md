@@ -6,6 +6,9 @@ Work in progress, will arrive soon.
 ```
 
 A spatial location library for Web-of-Things-enabled web sites.
+
+Take a look at the [project page](http://frostyandy2k.github.io/indiana-js/).
+
 Check out some web-apps that use the library:
 
  * [IoT-Compass](https://github.com/frostyandy2k/iot-compass)
