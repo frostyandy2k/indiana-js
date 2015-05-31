@@ -98,11 +98,11 @@ var spatialAwareness = function() {
 			method: type,
 			data: data
 		}).done(function(data) {
-			console.log("done:",data)
-			$("#qrcodedivdata").html(data)
+			console.log("Ajax Success:",data)
+			// $("#qrcodedivdata").html(data)
 			cb(data)
 		}).fail(function(jqXHR, textStatus) {  
-			console.log( "Request failed: " + textStatus, jqXHR.statusText );
+			console.log( "Ajax request failed: " + textStatus, jqXHR );
 			// $("#qrcodedivdata").html(textStatus)
 			cbe(jqXHR)
 		});
@@ -112,13 +112,13 @@ var spatialAwareness = function() {
 		var dir = getOrientation().dir;
 		// console.log(dir)
 		// var foundItem = false;
-		var count = itemsArray.length;
+		var count = Object.keys(itemsArray).length;
 		$.each(itemsArray, function(key, item) {
 			var itemlocation = item.location.dir;
 			var difference = Math.abs(dir - itemlocation);
 			if(difference < range/2) {
 				// foundItem = true;
-				var event = new CustomEvent('foundItemInFront', {detail: item});
+				var event = new CustomEvent('foundItemInFront', {detail: {key:key, value:item}}	);
 				document.dispatchEvent(event);
 			} else {
 				count--;
@@ -128,32 +128,6 @@ var spatialAwareness = function() {
 				}
 			}
 		})
-	}
-
-	// data-locationaware
-	// das ist nur eine beispielanwendung
-	function appendLocationTextChildren(){
-	    $.each(registeredThings, function(key, value) {
-	        location = getThingCardinalPosition(value.key);
-
-	        id = '#' + value.key;
-	        switch(location){
-	        case 'N':  createLocationText(id, value.key, 'in front') break;
-	        case 'NW': createLocationText(id, value.key, 'left up') break;
-	        case 'NE': createLocationText(id, value.key, 'right up') break;
-	        case 'SW': createLocationText(id, value.key, 'left down') break;
-	        case 'EW': createLocationText(id, value.key, 'right down') break;
-	        case 'S': createLocationText(id, value.key, 'behind', true) break;
-	        case 'E': createLocationText(id, value.key, 'right') break;
-	        case 'W': createLocationText(id, value.key, 'left') break;
-	    }
-	        
-	    })
-	}
-
-	function createLocationText(id, thing, location, no_of){
-	    var of = no_of ? '' : ' of';
-	    $(id).append("<p>The "+thing+" is "+location+of+" you </p>");
 	}
 
 	/* Teil der API
@@ -166,26 +140,47 @@ var spatialAwareness = function() {
 
 	*/
 	function getThingCardinalPosition(thing){
-	    degree = getThingPosition2DinDegree(thing);
-	    if (degree < 22.5 && degree > (360-22.5))
+	    var degree = getThingPosition2DinDegree(thing);
+	    if (degree < 22.5 || degree > (360-22.5))
 	        return 'N';
-	    if (degree < 22.5 && degree > (360-22.5))
+	    if (degree < (45+22.5) && degree > 22.5)
 	        return 'NW';
-	    if (degree < 22.5 && degree > (360-22.5))
+	    if (degree < (90+22.5) && degree > (45+22.5))
 	        return 'W';
-	    if (degree < 22.5 && degree > (360-22.5))
+	    if (degree < (135+22.5) && degree > (90+22.5))
 	        return 'SW';
-	    if (degree < 22.5 && degree > (360-22.5))
+	    if (degree < (180+22.5) && degree > (135+22.5))
 	        return 'S';
-	    if (degree < 22.5 && degree > (360-22.5))
+	    if (degree < (225+22.5) && degree > (180+22.5))
 	        return 'SE';
-	    if (degree < 22.5 && degree > (360-22.5))
+	    if (degree < (270+22.5) && degree > (225+22.5))
 	        return 'E';
-	    if (degree < 22.5 && degree > (360-22.5))
+	    if (degree < 315+22.5 && degree > (270+22.5))
 	        return 'NE';
-
 	}
-
+	function getThingPosition2DinDegree(thing) {
+		var dir = normalizeDegree(itemsArray[thing].location.dir-getOrientation().dir);
+		// setInterval(function() {
+			// console.log(thing, dir)
+		// }, 10000);
+		return dir;
+	}
+	// function registerItems(items) {
+	// 	if(items.constructor == Object) {
+	// 		for(var key in items) {
+	// 			var item = items[key];
+	// 			if(!item.uri || !item.location) {
+	// 				console.log("ERROR: An item doesn't contain a uri or location:", item);
+	// 				console.log(items)
+	// 				return false;
+	// 			}
+	// 		}
+	// 		itemsArray = items;
+	// 		return true;
+	// 	}
+	// 	console.log("ERROR: This function can only register an array of items.")
+	// 	return false;
+	// }
 	function getOrientation() {
 		var orientation = {}
 		orientation.tiltLR = currentOrientation.tiltLR - originalOrientation.tiltLR;
@@ -193,100 +188,36 @@ var spatialAwareness = function() {
 		orientation.dir = normalizeDegree(currentOrientation.dir - originalOrientation.dir);
 		return orientation;
 	}
-
+	function getRoomData(cb) {
+		var url = window.location.pathname + "/items";
+		ajaxRequest(url,"GET", {}, function(data) {
+			// console.log("Ajax success:", data);
+			itemsArray = data;
+			init();
+			cb(data);
+		}, function(err) {
+			// console.log("Ajax error:", err);
+			itemsArray = kitchenitems;
+			init();
+			cb(kitchenitems);
+		});
+	}
 	return {
-		registerItems : function(items) {
-			if(items.constructor == Array) {
-				for(var key in items) {
-					var item = items[key];
-					if(!item.uri || !item.location) {
-						console.log("ERROR: An item doesn't contain a uri or location:", item);
-						console.log(items)
-						return false;
-					}
-				}
-				itemsArray = items;
-				return true;
-			}
-			console.log("ERROR: This function can only register an array of items.")
-			return false;
-		},
+		// registerItems : registerItems,
 		getPosition : function() {
 			return position;
 		},
-		getOrientation : function() {
-			var orientation = {}
-			orientation.tiltLR = currentOrientation.tiltLR - originalOrientation.tiltLR;
-			orientation.tiltFB = currentOrientation.tiltFB - originalOrientation.tiltFB;
-			orientation.dir = normalizeDegree(currentOrientation.dir - originalOrientation.dir);
-			return orientation;
-		},
+		getOrientation : getOrientation,
 		resetOrientation : function() {
 			originalOrientation.tiltLR = currentOrientation.tiltLR;
 			originalOrientation.tiltFB = currentOrientation.tiltFB;
 			originalOrientation.dir = currentOrientation.dir;
 			console.log("Reseted orientation at:", currentOrientation);
 		},
-		getOrientation : function() {
-			var orientation = {}
-			orientation.tiltLR = currentOrientation.tiltLR - originalOrientation.tiltLR;
-			orientation.tiltFB = currentOrientation.tiltFB - originalOrientation.tiltFB;
-			orientation.dir = normalizeDegree(currentOrientation.dir - originalOrientation.dir);
-			return orientation;
-		},
-		getData : function(cb) {
-			  // console.log( "Start Ajax Request!" );
-			// $.get( "http://localhost:8080/kitchen", function( data ) {
-			//   console.log( "success:",data );
-			//   // alert( "Load was performed." );
-			// }).fail(function(err) {
-			// 	console.log("Error:",err.statusText)
-			// }).done(function(data) {
-			//   console.log( "done:",data );
-			// });
-				// $("#qrcodedivdata").html("Getting data")
-			ajaxRequest("http://localhost:8080/kitchen","GET", {}, function(data) {
-				console.log("Ajax success:", data);
-				init();
-				cb(data);
-			}, function(err) {
-				console.log("Ajax error:", err);
-				itemsArray = kitchenitems;
-				init();
-				cb(kitchenitems);
-			});
-		},
-		activateQRCodeReader : function(divselector, cb) {
-			$(divselector).html5_qrcode(function(data) {
-			        // do something when code is read
-					// $(divselector+"data").html(data);
-			    	console.log(data)
-			    	var r = confirm("Are you in TECO kitchen?")
-			    	if(r) {
-						ajaxRequest("http://localhost:8080/kitchen","GET", {}, function(data) {
-							console.log("Ajax success:", data);
-			    			init();
-							itemsArray = data;
-							cb(data)
-						}, function(err) {
-							console.log("Ajax error:", err);
-							// $("#qrcodediverr").html(err.statusText)
-						});
-			    		// $(divselector+"data").html("Welcome to TECO kitchen.")
-			    	} else {
-			    		init();
-						itemsArray = kitchenitems;
-			    		cb(kitchenitems);
-			    	}
-			    }, function(error){
-			        //show read errors 
-					// $(divselector+"err").html(error)
-			        // console.log(error)
-			    }, function(videoError){
-			        //the video stream could be opened
-			        console.log(videoError)
-			    })
-		},
+		getThingCardinalPosition: getThingCardinalPosition,
+		getThingPosition2DinDegree: getThingPosition2DinDegree,
+		getRoomData : getRoomData,
+		activateQRCodeReader : activateQRCodeReader,
 		deactivateQRCodeReader : function(divselector) {
 			$(divselector).html5_qrcode_stop();
 			$(divselector).html('')
@@ -330,5 +261,37 @@ var spatialAwareness = function() {
 					.style("fill", val.color);
 			});
 		}
+	}
+
+	function activateQRCodeReader(divselector, cb) {
+		$(divselector).html5_qrcode(function(data) {
+		        // do something when code is read
+				// $(divselector+"data").html(data);
+		    	console.log(data)
+		    	var r = confirm("Are you in TECO kitchen?")
+		    	if(r) {
+					ajaxRequest("http://localhost:8080/kitchen","GET", {}, function(data) {
+						console.log("Ajax success:", data);
+		    			init();
+						itemsArray = data;
+						cb(data)
+					}, function(err) {
+						console.log("Ajax error:", err);
+						// $("#qrcodediverr").html(err.statusText)
+					});
+		    		// $(divselector+"data").html("Welcome to TECO kitchen.")
+		    	} else {
+		    		init();
+					itemsArray = kitchenitems;
+		    		cb(kitchenitems);
+		    	}
+		    }, function(error){
+		        //show read errors 
+				// $(divselector+"err").html(error)
+		        // console.log(error)
+		    }, function(videoError){
+		        //the video stream could be opened
+		        console.log(videoError)
+		    })
 	}
 }
