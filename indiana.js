@@ -130,6 +130,62 @@ var spatialAwareness = function() {
 		})
 	}
 
+	// data-locationaware
+	// das ist nur eine beispielanwendung
+	function appendLocationTextChildren(){
+	    $.each(registeredThings, function(key, value) {
+	        location = getThingCardinalPosition(value.key);
+
+	        id = '#' + value.key;
+	        switch(location){
+	        case 'N':  createLocationText(id, value.key, 'in front') break;
+	        case 'NW': createLocationText(id, value.key, 'left up') break;
+	        case 'NE': createLocationText(id, value.key, 'right up') break;
+	        case 'SW': createLocationText(id, value.key, 'left down') break;
+	        case 'EW': createLocationText(id, value.key, 'right down') break;
+	        case 'S': createLocationText(id, value.key, 'behind', true) break;
+	        case 'E': createLocationText(id, value.key, 'right') break;
+	        case 'W': createLocationText(id, value.key, 'left') break;
+	    }
+	        
+	    })
+	}
+
+	function createLocationText(id, thing, location, no_of){
+	    var of = no_of ? '' : ' of';
+	    $(id).append("<p>The "+thing+" is "+location+of+" you </p>");
+	}
+
+	/* Teil der API
+	 Returns a string representing the 2D location expressed in a 8 point cardinal direction
+	 This results in a 45 degree cone for each cardinal direction
+
+	 NW N NE
+	 W  .  E
+	 SW S SE
+
+	*/
+	function getThingCardinalPosition(thing){
+	    degree = getThingPosition2DinDegree(thing);
+	    if (degree < 22.5 && degree > (360-22.5))
+	        return 'N';
+	    if (degree < 22.5 && degree > (360-22.5))
+	        return 'NW';
+	    if (degree < 22.5 && degree > (360-22.5))
+	        return 'W';
+	    if (degree < 22.5 && degree > (360-22.5))
+	        return 'SW';
+	    if (degree < 22.5 && degree > (360-22.5))
+	        return 'S';
+	    if (degree < 22.5 && degree > (360-22.5))
+	        return 'SE';
+	    if (degree < 22.5 && degree > (360-22.5))
+	        return 'E';
+	    if (degree < 22.5 && degree > (360-22.5))
+	        return 'NE';
+
+	}
+
 	function getOrientation() {
 		var orientation = {}
 		orientation.tiltLR = currentOrientation.tiltLR - originalOrientation.tiltLR;
