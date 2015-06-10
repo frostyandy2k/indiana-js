@@ -1,0 +1,28 @@
+{
+  "name": "indiana-js",
+  "main": "index.js",
+  "version": "0.0.5",
+  "homepage": "indianajs.github.io",
+  "authors": [
+    "Andrei Miclaus <miclaus@teco.edu>"
+  ],
+  "description": "Spatial awarness and interaction library for the Internet of Things. Explore, discover and interact with devices around you.",
+  "keywords": [
+    "Exploration",
+    "Dicovery",
+    "Interaction",
+    "WoT",
+    "IoT",
+    "Relative",
+    "Spatial",
+    "Awareness"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

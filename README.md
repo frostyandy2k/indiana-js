@@ -5,9 +5,9 @@
 Work in progress, will arrive soon.
 ```
 
-A spatial location library for Web-of-Things-enabled web sites.
+A spatial location and interaction library for Web-of-Things-enabled web sites.
 
-Take a look at the [project page](http://frostyandy2k.github.io/indiana-js/).
+Take a look at the [PROJECT PAGE](http://indianajs.github.io/).
 
 Check out some web-apps that use the library:
 
