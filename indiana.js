@@ -93,6 +93,7 @@ var spatialAwareness = function() {
 	}
 
 	function ajaxRequest(url, type, data, cb, cbe) {
+		console.log(url)
 		$.ajax({
 			url: url,
 			method: type,
@@ -108,21 +109,27 @@ var spatialAwareness = function() {
 		});
 	}
 
+	// Dispatch foundItemInFront and noItemInFront events only once if it does't change!
+	var foundItem = '';
 	function checkFront(range) {
 		var dir = getOrientation().dir;
 		// console.log(dir)
-		// var foundItem = false;
 		var count = Object.keys(itemsArray).length;
 		$.each(itemsArray, function(key, item) {
 			var itemlocation = item.location.dir;
 			var difference = Math.abs(dir - itemlocation);
 			if(difference < range/2) {
-				// foundItem = true;
-				var event = new CustomEvent('foundItemInFront', {detail: {key:key, value:item}}	);
-				document.dispatchEvent(event);
+				if(key != foundItem) {
+					// console.log(foundItem, key);
+					foundItem = key;
+					var event = new CustomEvent('foundItemInFront', {detail: {key:key, value:item}}	);
+					document.dispatchEvent(event);
+				}
 			} else {
 				count--;
-				if(count == 0) {
+				if(foundItem != '' && count == 0) {
+					// console.log('notfound',count,foundItem);
+					foundItem = '';
 					var event = new CustomEvent('noItemInFront');
 					document.dispatchEvent(event);
 				}
@@ -141,21 +148,21 @@ var spatialAwareness = function() {
 	*/
 	function getThingCardinalPosition(thing){
 	    var degree = getThingPosition2DinDegree(thing);
-	    if (degree < 22.5 || degree > (360-22.5))
+	    if (degree <= 22.5 || degree > (360-22.5))
 	        return 'N';
-	    if (degree < (45+22.5) && degree > 22.5)
+	    if (degree <= (45+22.5) && degree > 22.5)
 	        return 'NW';
-	    if (degree < (90+22.5) && degree > (45+22.5))
+	    if (degree <= (90+22.5) && degree > (45+22.5))
 	        return 'W';
-	    if (degree < (135+22.5) && degree > (90+22.5))
+	    if (degree <= (135+22.5) && degree > (90+22.5))
 	        return 'SW';
-	    if (degree < (180+22.5) && degree > (135+22.5))
+	    if (degree <= (180+22.5) && degree > (135+22.5))
 	        return 'S';
-	    if (degree < (225+22.5) && degree > (180+22.5))
+	    if (degree <= (225+22.5) && degree > (180+22.5))
 	        return 'SE';
-	    if (degree < (270+22.5) && degree > (225+22.5))
+	    if (degree <= (270+22.5) && degree > (225+22.5))
 	        return 'E';
-	    if (degree < 315+22.5 && degree > (270+22.5))
+	    if (degree <= 315+22.5 && degree > (270+22.5))
 	        return 'NE';
 	}
 	function getThingPosition2DinDegree(thing) {
@@ -202,8 +209,18 @@ var spatialAwareness = function() {
 			cb(kitchenitems);
 		});
 	}
+	function updateItem(id, obj) {
+		// console.log('before',itemsArray[id])
+		if(itemsArray[id]){
+			$.extend(itemsArray[id],obj);
+			var event = new CustomEvent('itemDataChanged', {detail: itemsArray[id]}	);
+			document.dispatchEvent(event);
+		}
+		// console.log('after',itemsArray[id])
+	}
 	return {
 		// registerItems : registerItems,
+		updateItem : updateItem,
 		getPosition : function() {
 			return position;
 		},
