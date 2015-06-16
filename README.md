@@ -41,6 +41,12 @@ Check out some web-apps that use the library:
     </script>
    
 ```
+## Demo Application
+
+A demo application in form of the [IoT-Radar](https://github.com/frostyandy2k/iot-compass) is available [HERE](http://frostyandy2k.github.io/iot-compass/examples/livinglab.html).
+
+Please note that due to improper rendering support for SVGs in current WebKit browsers the demo may lag significantly. For the best experience, Firefox mobile is recommended.
+We are working to fix this issue by replacing the computation intensive svg fill operations by simple images until the software support reaches an acceptable level.
 
 ### Authors and Contributors
 Many Thanks to Jack Unseld (@junseld) and Till Riedel (@riedel)
