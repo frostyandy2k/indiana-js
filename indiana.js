@@ -32,7 +32,7 @@ var spatialAwareness = function() {
 	var position = {x:0, y:0};
 
 	var itemsArray = [];
-	var range = 10;
+	var range = 30;
 	
 	function init() {
 		var initialResetDone = false;
