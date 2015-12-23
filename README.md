@@ -1,10 +1,11 @@
 <img src="indianajs.png" alt="IndianaJS" height="50px">
 # IndianaJS
 
-We migrated the projec to it's new home https://github.com/indianajs/indiana-js.git
+We migrated the project to it's new home https://github.com/indianajs/indiana-js.git
 
 [PROJECT PAGE](http://indianajs.github.io/).
 
+----
 
 Old readme contents:
 
